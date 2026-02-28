@@ -79,17 +79,36 @@ function ProductionSystem() {
     }
   };
 
+  /** PERBAIKAN FILTER EXPORT **/
   const handleExport = () => {
-    const filtered = records.filter(r => filterDate ? r.date === filterDate : true);
-    const totalQty = filtered.reduce((sum, item) => sum + (item.quantity || 0), 0);
-    const dataExcel = filtered.map(r => ({
-      [t.date]: r.date, [t.time]: r.time, [t.color]: r.color, [t.shift]: r.shift === "Siang" ? t.day : t.night, [t.product]: r.product, [t.qty]: r.quantity
+    // 1. Filter data berdasarkan filterDate yang sedang aktif di UI
+    const filteredData = records.filter(r => filterDate ? r.date === filterDate : true);
+    
+    if (filteredData.length === 0) return alert("Tidak ada data untuk tanggal ini!");
+
+    // 2. Hitung total qty dari data yang sudah difilter
+    const totalQty = filteredData.reduce((sum, item) => sum + (Number(item.quantity) || 0), 0);
+    
+    // 3. Susun format Excel
+    const dataExcel = filteredData.map(r => ({
+      [t.date]: r.date, 
+      [t.time]: r.time, 
+      [t.color]: r.color, 
+      [t.shift]: r.shift === "Siang" ? t.day : t.night, 
+      [t.product]: r.product, 
+      [t.qty]: r.quantity
     }));
+
+    // Tambahkan baris TOTAL di paling bawah
     dataExcel.push({ [t.product]: t.total, [t.qty]: totalQty });
+
     const ws = XLSX.utils.json_to_sheet(dataExcel);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Produksi");
-    XLSX.writeFile(wb, `Report_${new Date().toLocaleDateString()}.xlsx`);
+    
+    // Penamaan file dinamis berdasarkan filter
+    const fileName = filterDate ? `Report_${filterDate}.xlsx` : `Report_Semua_Data.xlsx`;
+    XLSX.writeFile(wb, fileName);
   };
 
   return (
@@ -162,6 +181,7 @@ function ProductionSystem() {
               <h3 className="font-black text-slate-800 tracking-tight text-lg">{t.logTitle}</h3>
             </div>
             <div className="flex items-center gap-4">
+              {/* FILTER TANGGAL DI UI */}
               <input type="date" value={filterDate} onChange={(e) => setFilterDate(e.target.value)} className="bg-white border border-slate-200 rounded-2xl px-4 py-2.5 text-xs font-bold outline-none focus:ring-4 focus:ring-blue-50/50 shadow-sm" />
               <Button onClick={handleExport} variant="success" className="text-xs">{t.export}</Button>
             </div>
