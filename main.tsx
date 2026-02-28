@@ -40,8 +40,8 @@ function ProductionSystem() {
   }, [language, records]);
 
   const text = {
-    id: { title: "SISTEM PRODUKSI", add: "Tambah Data", date: "Tanggal", time: "Waktu", color: "Warna", shift: "Shift", product: "Produk", qty: "Jumlah", save: "Simpan", export: "Ekspor Excel", delete: "Hapus", total: "TOTAL" },
-    cn: { title: "生产系统", add: "添加数据", date: "日期", time: "时间", color: "颜色", shift: "班次", product: "产品", qty: "数量", save: "保存", export: "导出 Excel", delete: "删除", total: "总计" },
+    id: { title: "SISTEM PRODUKSI", add: "Tambah Data", date: "Tanggal", time: "Waktu", color: "Warna", shift: "Shift", product: "Produk", qty: "Jumlah", save: "Simpan", export: "Ekspor Excel", action: "Aksi", delete: "Hapus", total: "TOTAL" },
+    cn: { title: "生产系统", add: "添加数据", date: "日期", time: "时间", color: "颜色", shift: "班次", product: "产品", qty: "数量", save: "保存", export: "导出 Excel", action: "导出", delete: "删除", total: "总计" },
   };
 
   const t = text[language as keyof typeof text];
