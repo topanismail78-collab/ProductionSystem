@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import ReactDOM from "react-dom/client";
 import * as XLSX from "xlsx";
 
-/** 1. KOMPONEN UI INTERNAL **/
 const Card = ({ children, className = "" }: any) => (
   <div className={`bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden ${className}`}>{children}</div>
 );
@@ -23,7 +22,6 @@ const Input = (props: any) => (
   <input {...props} className={`w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white ${props.className}`} />
 );
 
-/** 2. APLIKASI UTAMA **/
 function ProductionSystem() {
   const [language, setLanguage] = useState(() => localStorage.getItem("app_lang") || "id");
   const [records, setRecords] = useState<any[]>(() => {
@@ -40,56 +38,50 @@ function ProductionSystem() {
   }, [language, records]);
 
   const text = {
-    id: { title: "SISTEM PRODUKSI", add: "Tambah Data", date: "Tanggal", time: "Waktu", color: "Warna", shift: "Shift", product: "Produk", qty: "Jumlah", save: "Simpan", export: "Ekspor Excel", action: "Aksi", delete: "Hapus", total: "TOTAL" },
-    cn: { title: "生产系统", add: "添加数据", date: "日期", time: "时间", color: "颜色", shift: "班次", product: "产品", qty: "数量", save: "保存", export: "导出 Excel", action: "导出", delete: "删除", total: "总计" },
+    id: { 
+        title: "SISTEM PRODUKSI", add: "Tambah Data", date: "Tanggal", time: "Waktu", 
+        color: "Warna", shift: "Shift", product: "Produk", qty: "Jumlah", 
+        save: "Simpan", export: "Ekspor Excel", action: "Aksi", delete: "Hapus", total: "TOTAL",
+        day: "Siang", night: "Malam"
+    },
+    cn: { 
+        title: "生产系统", add: "添加数据", date: "日期", time: "时间", 
+        color: "颜色", shift: "班次", product: "产品", qty: "数量", 
+        save: "保存", export: "导出 Excel", action: "操作", delete: "删除", total: "总计",
+        day: "白班", night: "夜班"
+    },
   };
 
   const t = text[language as keyof typeof text];
 
   const handleSubmit = () => {
     if (!form.date || !form.product || !form.quantity) return alert("Isi data dengan lengkap!");
-    
-    // Mengambil waktu saat ini secara otomatis
     const currentTime = new Date().toLocaleTimeString("id-ID", { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-    
     const newRec = { 
       ...form, 
       id: Date.now(), 
-      time: currentTime, // Simpan waktu otomatis
+      time: currentTime, 
       quantity: parseInt(form.quantity) 
     };
-    
     setRecords([newRec, ...records]);
     setForm({ ...form, color: "", product: "", quantity: "" });
   };
 
   const handleExport = () => {
-    // Filter data berdasarkan tanggal jika ada
     const filteredRecords = records.filter(r => filterDate ? r.date === filterDate : true);
-    
-    // Hitung Total
     const totalQty = filteredRecords.reduce((sum, item) => sum + (item.quantity || 0), 0);
-
-    // Map data untuk Excel
     const dataForExcel = filteredRecords.map(r => ({
-      [t.date]: r.date,
-      [t.time]: r.time, // Waktu masuk ke Excel
-      [t.color]: r.color,
-      [t.shift]: r.shift,
-      [t.product]: r.product,
+      [t.date]: r.date, 
+      [t.time]: r.time, 
+      [t.color]: r.color, 
+      [t.shift]: r.shift === "Siang" ? t.day : t.night, // Export Excel juga berubah bahasa
+      [t.product]: r.product, 
       [t.qty]: r.quantity
     }));
-
-    // Tambahkan baris TOTAL di paling bawah
     dataForExcel.push({
-      [t.date]: "",
-      [t.time]: "",
-      [t.color]: "",
-      [t.shift]: "",
-      [t.product]: t.total,
-      [t.qty]: totalQty
+      [t.date]: "", [t.time]: "", [t.color]: "", 
+      [t.shift]: "", [t.product]: t.total, [t.qty]: totalQty
     });
-
     const ws = XLSX.utils.json_to_sheet(dataForExcel);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Laporan");
@@ -110,7 +102,7 @@ function ProductionSystem() {
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
           <Input type="date" value={form.date} onChange={(e:any) => setForm({...form, date: e.target.value})} />
           <Input placeholder={t.color} value={form.color} onChange={(e:any) => setForm({...form, color: e.target.value})} />
-          <select value={form.shift} onChange={(e) => setForm({...form, shift: e.target.value})} className="border rounded-lg px-3 py-2 text-sm">
+          <select value={form.shift} onChange={(e) => setForm({...form, shift: e.target.value})} className="border rounded-lg px-3 py-2 text-sm bg-white">
             <option value="Siang">Siang / 白班</option>
             <option value="Malam">Malam / 夜班</option>
           </select>
@@ -134,19 +126,25 @@ function ProductionSystem() {
                 <th className="p-4">{t.color}</th>
                 <th className="p-4">{t.product}</th>
                 <th className="p-4">{t.qty}</th>
-                <th className="p-4 text-center">{t.delete}</th>
+                <th className="p-4 text-center">{t.action}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
               {records.filter(r => filterDate ? r.date === filterDate : true).map(r => (
                 <tr key={r.id} className="hover:bg-blue-50/30 transition-colors">
                   <td className="p-4">{r.date}</td>
-                  <td className="p-4 text-gray-500 font-mono">{r.time}</td>
+                  <td className="p-4 text-gray-500 font-mono text-xs">{r.time}</td>
                   <td className="p-4">{r.color}</td>
                   <td className="p-4 font-medium">{r.product}</td>
                   <td className="p-4 font-bold text-blue-600">{r.quantity}</td>
+                  {/* BAGIAN SHIFT YANG SUDAH DIPERBAIKI: */}
+                  <td className="p-4">
+                    {r.shift === "Siang" ? t.day : t.night}
+                  </td>
                   <td className="p-4 text-center">
-                    <button onClick={() => setRecords(records.filter(i => i.id !== r.id))} className="text-red-400 font-bold">✕</button>
+                    <button onClick={() => setRecords(records.filter(i => i.id !== r.id))} className="text-red-500 font-bold">
+                      {t.delete}
+                    </button>
                   </td>
                 </tr>
               ))}
